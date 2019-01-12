@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Object Data Parser", "Object Data Parser\Object Data Parser.csproj", "{930EC095-9EA9-456C-B150-B718327ECD55}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{930EC095-9EA9-456C-B150-B718327ECD55}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{930EC095-9EA9-456C-B150-B718327ECD55}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{930EC095-9EA9-456C-B150-B718327ECD55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{930EC095-9EA9-456C-B150-B718327ECD55}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF2DEF70-2B85-44B8-85FC-3AE03052BBBA}
+	EndGlobalSection
+EndGlobal
