@@ -94,7 +94,7 @@
 			this.btnBrowseIn.TabIndex = 2;
 			this.btnBrowseIn.Text = "Browse";
 			this.btnBrowseIn.UseVisualStyleBackColor = true;
-			this.btnBrowseIn.Click += new System.EventHandler(this.btnBrowseIn_Click);
+			this.btnBrowseIn.Click += new System.EventHandler(this.BtnBrowseIn_Click);
 			this.btnBrowseIn.DragDrop += new System.Windows.Forms.DragEventHandler(this.DoDirDrop);
 			this.btnBrowseIn.DragEnter += new System.Windows.Forms.DragEventHandler(this.DoFileHover);
 			// 
@@ -147,7 +147,7 @@
 			this.btnBrowseOut.TabIndex = 3;
 			this.btnBrowseOut.Text = "Browse";
 			this.btnBrowseOut.UseVisualStyleBackColor = true;
-			this.btnBrowseOut.Click += new System.EventHandler(this.btnBrowseOut_Click);
+			this.btnBrowseOut.Click += new System.EventHandler(this.BtnBrowseOut_Click);
 			this.btnBrowseOut.DragDrop += new System.Windows.Forms.DragEventHandler(this.DoFileDrop);
 			this.btnBrowseOut.DragEnter += new System.Windows.Forms.DragEventHandler(this.DoFileHover);
 			// 
@@ -186,7 +186,7 @@
 			this.btnBrowseOutCsv.TabIndex = 3;
 			this.btnBrowseOutCsv.Text = "Browse";
 			this.btnBrowseOutCsv.UseVisualStyleBackColor = true;
-			this.btnBrowseOutCsv.Click += new System.EventHandler(this.btnBrowseOutCsv_Click);
+			this.btnBrowseOutCsv.Click += new System.EventHandler(this.BtnBrowseOutCsv_Click);
 			this.btnBrowseOutCsv.DragDrop += new System.Windows.Forms.DragEventHandler(this.DoFile2Drop);
 			this.btnBrowseOutCsv.DragEnter += new System.Windows.Forms.DragEventHandler(this.DoFileHover);
 			// 
@@ -207,7 +207,7 @@
 			this.btnProcess.TabIndex = 7;
 			this.btnProcess.Text = "Process";
 			this.btnProcess.UseVisualStyleBackColor = true;
-			this.btnProcess.Click += new System.EventHandler(this.btnProcess_Click);
+			this.btnProcess.Click += new System.EventHandler(this.BtnProcess_Click);
 			// 
 			// DataParserForm
 			// 

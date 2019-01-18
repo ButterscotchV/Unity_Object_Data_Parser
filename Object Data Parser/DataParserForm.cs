@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace Object_Data_Parser
@@ -55,17 +56,17 @@ namespace Object_Data_Parser
 			MinimumSize = Size;
 		}
 
-		private void btnBrowseIn_Click(object sender, EventArgs e)
+		private void BtnBrowseIn_Click(object sender, EventArgs e)
 		{
 			DoDirDialog();
 		}
 
-		private void btnBrowseOut_Click(object sender, EventArgs e)
+		private void BtnBrowseOut_Click(object sender, EventArgs e)
 		{
 			DoFileDialog();
 		}
 
-		private void btnBrowseOutCsv_Click(object sender, EventArgs e)
+		private void BtnBrowseOutCsv_Click(object sender, EventArgs e)
 		{
 			DoFile2Dialog();
 		}
@@ -141,7 +142,7 @@ namespace Object_Data_Parser
 			}
 		}
 
-		private void btnProcess_Click(object sender, EventArgs e)
+		private void BtnProcess_Click(object sender, EventArgs e)
 		{
 			ProcessFiles();
 		}
@@ -153,7 +154,7 @@ namespace Object_Data_Parser
 			if (dataDir != null)
 			{
 				int curFileCount = 0;
-				int maxFileCount = (dataDir.GetFiles().Length * 2) + 3;
+				int maxFileCount = dataDir.GetFiles().Length * ((string.IsNullOrEmpty(txtOut.Text) ? 0 : 1) + (string.IsNullOrEmpty(txtOutCsv.Text) ? 0 : 1)) + (string.IsNullOrEmpty(txtOut.Text) ? 0 : 3);
 				progressBar.Value = 0;
 
 				CsvGen csvGen = new CsvGen
@@ -164,158 +165,171 @@ namespace Object_Data_Parser
 				/*
 				 * Diffs Generation
 				 */
-				Dictionary<string, int> objectsList = new Dictionary<string, int>();
-
-				foreach (File file in dataDir.GetFiles())
+				if (!string.IsNullOrEmpty(txtOut.Text))
 				{
-					if (file != null && file.Name.EndsWith("Diffs.txt"))
+					Dictionary<string, float> objectsList = new Dictionary<string, float>();
+
+					foreach (File file in dataDir.GetFiles())
 					{
-						foreach (string line in System.IO.File.ReadAllLines(file.Path))
+						if (file != null && file.Name.EndsWith("Diffs.txt"))
 						{
-							if (string.IsNullOrEmpty(line))
+							foreach (string line in System.IO.File.ReadAllLines(file.Path))
 							{
-								continue;
-							}
-							
-							string[] split = line.Split(new string[] { " # " }, StringSplitOptions.None);
-
-							if (split.Length == 2 && !string.IsNullOrEmpty(split[0]) && int.TryParse(split[1], out int parsedCount))
-							{
-								string parsedName = split[0];
-
-								int value = 0;
-								if (objectsList.ContainsKey(parsedName) && objectsList.TryGetValue(parsedName, out value))
+								if (string.IsNullOrEmpty(line))
 								{
-									objectsList.Remove(parsedName);
+									continue;
 								}
 
-								objectsList.Add(parsedName, value + parsedCount);
+								string[] split = line.Split(new string[] {" # "}, StringSplitOptions.None);
+
+								if (split.Length == 2 && !string.IsNullOrEmpty(split[0]) && float.TryParse(split[1], out float parsedCount))
+								{
+									string parsedName = split[0];
+
+									float value = 0;
+									if (objectsList.ContainsKey(parsedName) && objectsList.TryGetValue(parsedName, out value))
+									{
+										objectsList.Remove(parsedName);
+									}
+
+									objectsList.Add(parsedName, value + parsedCount);
+								}
 							}
+						}
+
+						progressBar.Value = ++curFileCount / maxFileCount;
+					}
+
+					List<string> list = new List<string>();
+
+					foreach (KeyValuePair<string, float> objectCount in objectsList)
+					{
+						if (objectCount.Value != 0)
+						{
+							list.Add(objectCount.Key + " # " + objectCount.Value);
 						}
 					}
 
-					progressBar.Value = ++curFileCount / maxFileCount;
-				}
+					objectsList.Clear();
 
-				List<string> list = new List<string>();
-
-				foreach (KeyValuePair<string, int> objectCount in objectsList)
-				{
-					if (objectCount.Value != 0)
+					for (int i = 0; i < 1000; i++)
 					{
-						list.Add(objectCount.Key + " # " + objectCount.Value);
+						try
+						{
+							System.IO.File.WriteAllLines(txtOut.Text, list.ToArray());
+							break;
+						}
+						catch
+						{
+							// ignored
+						}
 					}
+
+					list.Clear();
 				}
 
 				/*
 				 * CSV Generation
 				 */
-				Dictionary<string, Dictionary<int, int>> csvObjectsList = new Dictionary<string, Dictionary<int, int>>();
-
-				int rowCount = 0;
-
-				foreach (File file in dataDir.GetFiles())
+				if (!string.IsNullOrEmpty(txtOutCsv.Text))
 				{
-					if (file != null && !file.Name.EndsWith("Diffs.txt"))
+					Dictionary<string, Dictionary<int, float>> csvObjectsList = new Dictionary<string, Dictionary<int, float>>();
+
+					int rowCount = 0;
+
+					foreach (File file in dataDir.GetFiles())
 					{
-						foreach (string line in System.IO.File.ReadAllLines(file.Path))
+						if (file != null && !file.Name.EndsWith("Diffs.txt"))
 						{
-							if (string.IsNullOrEmpty(line)) continue;
-
-							string[] split = line.Split(new string[] { " # " }, StringSplitOptions.None);
-
-							if (split.Length != 2 || string.IsNullOrEmpty(split[0]) || !int.TryParse(split[1], out int parsedCount)) continue;
-
-							string parsedName = split[0];
-							string strParsedMinutes = file.Name.Substring("LogNum".Length); // "LogNum2.txt"
-							strParsedMinutes = strParsedMinutes.Remove(strParsedMinutes.IndexOf(".txt", StringComparison.Ordinal)); // "2.txt"
-
-							if (!int.TryParse(strParsedMinutes, out int parsedMinutes)) continue;
-
-							if (csvObjectsList.ContainsKey(parsedName) && csvObjectsList.TryGetValue(parsedName, out Dictionary<int, int> value))
+							foreach (string line in System.IO.File.ReadAllLines(file.Path))
 							{
-								value.Add(parsedMinutes, parsedCount);
-							}
-							else
-							{
-								Dictionary<int, int> dict = new Dictionary<int, int>
+								if (string.IsNullOrEmpty(line)) continue;
+
+								string[] split = line.Split(new string[] {" # "}, StringSplitOptions.None);
+
+								if (split.Length != 2 || string.IsNullOrEmpty(split[0]) || !float.TryParse(split[1], out float parsedCount)) continue;
+
+								string parsedName = split[0];
+								string strParsedMinutes = file.Name.Substring("LogNum".Length); // "LogNum2.txt"
+								strParsedMinutes = strParsedMinutes.Remove(strParsedMinutes.IndexOf(".txt", StringComparison.Ordinal)); // "2.txt"
+
+								if (!int.TryParse(strParsedMinutes, out int parsedMinutes)) continue;
+
+								if (csvObjectsList.ContainsKey(parsedName) && csvObjectsList.TryGetValue(parsedName, out Dictionary<int, float> value))
 								{
-									{ parsedMinutes, parsedCount }
-								};
+									value.Add(parsedMinutes, parsedCount);
+								}
+								else
+								{
+									Dictionary<int, float> dict = new Dictionary<int, float>
+									{
+										{parsedMinutes, parsedCount}
+									};
 
-								csvObjectsList.Add(parsedName, dict);
+									csvObjectsList.Add(parsedName, dict);
+								}
 							}
+
+							rowCount++;
 						}
 
-						rowCount++;
+						progressBar.Value = ++curFileCount / maxFileCount;
 					}
+
+					Dictionary<string, float[]> columns = new Dictionary<string, float[]>();
+					List<string>[] rows = new List<string>[rowCount];
+
+					foreach (KeyValuePair<string, Dictionary<int, float>> objectCount in csvObjectsList)
+					{
+						float[] column = new float[rowCount];
+
+						for (int i = 0; i < column.Length; i++)
+						{
+							column[i] = (objectCount.Value.TryGetValue(i, out float value) ? value : 0);
+						}
+
+						columns.Add(objectCount.Key, column);
+					}
+
+					for (int i = 0; i < rows.Length; i++)
+					{
+						rows[i] = new List<string>(new string[] {i.ToString()});
+					}
+
+					for (int i = 0; i < rows.Length; i++)
+					{
+						foreach (KeyValuePair<string, float[]> column in columns)
+						{
+							rows[i].Add(column.Value[i].ToString(CultureInfo.InvariantCulture));
+						}
+					}
+
+					/*
+					 * Finally add data to CSV
+					 */
+					foreach (KeyValuePair<string, float[]> column in columns)
+					{
+						csvGen.columnNames.Add(column.Key);
+					}
+
+					csvGen.rows = new List<List<string>>(rows);
 
 					progressBar.Value = ++curFileCount / maxFileCount;
-				}
 
-				Dictionary<string, int[]> columns = new Dictionary<string, int[]>();
-				List<string>[] rows = new List<string>[rowCount];
-
-				foreach (KeyValuePair<string, Dictionary<int, int>> objectCount in csvObjectsList)
-				{
-					int[] column = new int[rowCount];
-
-					for (int i = 0; i < column.Length; i++)
+					for (int i = 0; i < 1000; i++)
 					{
-						column[i] = (objectCount.Value.TryGetValue(i, out int value) ? value : 0);
-					}
-
-					columns.Add(objectCount.Key, column);
-				}
-
-				for (int i = 0; i < rows.Length; i++)
-				{
-					rows[i] = new List<string>(new string[] { i.ToString() });
-				}
-
-				for (int i = 0; i < rows.Length; i++)
-				{
-					foreach (KeyValuePair<string, int[]> column in columns)
-					{
-						rows[i].Add(column.Value[i].ToString());
+						try
+						{
+							csvGen.WriteTable(txtOutCsv.Text);
+							break;
+						}
+						catch
+						{
+							// ignored
+						}
 					}
 				}
 
-				/*
-				 * Finally add data to CSV
-				 */
-				foreach (KeyValuePair<string, int[]> column in columns)
-				{
-					csvGen.columnNames.Add(column.Key);
-				}
-				csvGen.rows = new List<List<string>>(rows);
-
-				progressBar.Value = ++curFileCount / maxFileCount;
-
-				for (int i = 0; i < 1000; i++)
-				{
-					try
-					{
-						System.IO.File.WriteAllLines(txtOut.Text, list.ToArray());
-						break;
-					}
-					catch
-					{
-						// ignored
-					}
-				}
-				for (int i = 0; i < 1000; i++)
-				{
-					try
-					{
-						csvGen.WriteTable(txtOutCsv.Text);
-						break;
-					}
-					catch
-					{
-						// ignored
-					}
-				}
 				progressBar.Value = 100;
 
 				const string message = "Data has successfully been processed!";
